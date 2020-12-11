@@ -1,8 +1,11 @@
 package temporal
 
 import (
+	"math"
 	"math/cmplx"
 	"math/rand"
+	"errors"
+	"fmt"
 )
 
 type Range struct {
@@ -54,13 +57,25 @@ func Uunifast (u_total float64, n int) []float64 {
 	return components
 }
 
-// Gives WCET and periods for given utilizations and period range
-func Make_Temporal_Data (r Range, us []float64) []Temporal {
+// Gives WCET and periods for given utilizations, period range, and granularity
+func Make_Temporal_Data (r Range, granularity float64, us []float64) ([]Temporal, error) {
 	ts := make([]Temporal, len(us))
+
+	// Closure: Returns value, rounded to the nearest multiple of factor
+	nearest_multiple := func (value, factor float64) float64 {
+		return math.Round(value / factor) * factor
+	}
+
+	// Ensure the granularity is not larger than the min
+	if granularity >= r.Min {
+		return nil, errors.New(fmt.Sprintf("Granularity (%f) larger than minimum value (%f)",
+			granularity, r.Min))
+	}
+
 	for i, u := range us {
-		period := (r.Min + (rand.Float64() * r.Max))
+		period := nearest_multiple((r.Min + (rand.Float64() * r.Max)), granularity)
 		wcet := period * u
 		ts[i] = Temporal{T: period, C: wcet}
 	}
-	return ts
+	return ts, nil
 }
