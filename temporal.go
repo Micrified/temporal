@@ -94,7 +94,7 @@ func Make_Temporal_Data (r Range, step float64, us []float64) ([]Temporal, error
 
 	// Closure: Returns value, rounded to the nearest multiple of factor
 	nearest_multiple := func (value, factor float64) float64 {
-		return math.Round(value / factor) * factor
+		return math.Ceil(value / factor) * factor
 	}
 
 	// Ensure the step is not larger than the min
